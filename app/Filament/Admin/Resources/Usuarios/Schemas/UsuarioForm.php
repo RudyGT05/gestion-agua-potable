@@ -12,7 +12,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-
+use Filament\Schemas\Components\View;
 class UsuarioForm
 {
     /**
@@ -38,23 +38,27 @@ class UsuarioForm
                 Section::make('Quién es')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->label('Nombre')
-                            ->required()
-                            ->maxLength(255),
+                TextInput::make('name')
+                    ->label('Nombre')
+                    ->required()
+                    ->maxLength(60)
+                    ->extraInputAttributes(['data-contador' => '60', 'data-contador-campo' => 'name']),
 
-                        TextInput::make('email')
-                            ->label('Correo electrónico')
-                            ->required()
-                            ->email()
-                            ->maxLength(255)
-                            ->unique(User::class, ignoreRecord: true)
-                            ->validationMessages([
-                                'unique' => 'Ya hay una cuenta con ese correo.',
-                            ])
-                            ->helperText('Es con lo que inicia sesión.'),
-                    ]),
+                TextInput::make('email')
+                    ->label('Correo electrónico')
+                    ->required()
+                    ->email()
+                    ->maxLength(100)
+                    ->extraInputAttributes(['data-contador' => '100', 'data-contador-campo' => 'email'])
+                    ->unique(User::class, ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'Ya hay una cuenta con ese correo.',
+                    ])
+                    ->helperText('Es con lo que inicia sesión.'),
 
+                View::make('filament.admin.usuarios.contador')->viewData(['campo' => 'name']),
+                View::make('filament.admin.usuarios.contador')->viewData(['campo' => 'email']),
+                  ]),
                 Section::make('Contraseña')
                     ->description(fn (string $operation): string => $operation === 'create'
                         ? 'La va a necesitar para su primer ingreso.'
@@ -65,6 +69,7 @@ class UsuarioForm
                             ->label('Contraseña')
                             ->password()
                             ->revealable()
+                            ->extraInputAttributes(['data-fuerza' => 'password'])
                             ->minLength(8)
                             ->required(fn (string $operation): bool => $operation === 'create')
                             // Vacío significa «no la cambies», no «bórrala»:
@@ -78,12 +83,14 @@ class UsuarioForm
                                 'min' => 'Use al menos 8 caracteres.',
                             ]),
 
-                        TextInput::make('password_confirmation')
-                            ->label('Repita la contraseña')
-                            ->password()
-                            ->revealable()
-                            ->dehydrated(false)
-                            ->required(fn (string $operation): bool => $operation === 'create'),
+                            TextInput::make('password_confirmation')
+                                ->label('Repita la contraseña')
+                                ->password()
+                                ->revealable()
+                                ->dehydrated(false)
+                                ->required(fn (string $operation): bool => $operation === 'create'),
+
+                            View::make('filament.admin.usuarios.fuerza-password')->columnSpanFull(),
                     ]),
 
                 Section::make('Qué puede hacer')
